@@ -56,14 +56,23 @@ class PgSift < Formula
         column_sql = testpath/"column-#{postgresql.name}.sql"
         column_sql.write <<~SQL
           LOAD 'pg_sift';
+          CREATE FUNCTION pg_temp.explain(q text) RETURNS SETOF text LANGUAGE plpgsql AS $$
+          DECLARE l text;
+          BEGIN FOR l IN EXECUTE 'EXPLAIN ' || q LOOP RETURN NEXT l; END LOOP; END $$;
           CREATE TABLE metrics (category int, amount int);
           INSERT INTO metrics SELECT i % 3, i FROM generate_series(1, 1000) i;
           CREATE INDEX metrics_col ON metrics USING sift_col (category, amount);
           VACUUM (ANALYZE) metrics;
           SET sift.enable_agg = on;
+          SET cpu_tuple_cost = 0.5;
           EXPLAIN (COSTS OFF) SELECT sum(amount) FROM metrics WHERE category = 1;
           SELECT sum(amount) FROM metrics WHERE category = 1;
-          DO $$ BEGIN
+          DO $$
+          DECLARE plan text;
+          BEGIN
+            SELECT string_agg(l, E'\\n') INTO plan FROM
+              pg_temp.explain('SELECT sum(amount) FROM metrics WHERE category = 1') l;
+            ASSERT plan LIKE '%SiftAgg%', plan;
             ASSERT (SELECT sum(amount) FROM metrics WHERE category = 1) = 167167;
           END $$;
         SQL
