@@ -4,9 +4,9 @@ class PgSift < Formula
   license "PostgreSQL"
   head "https://github.com/brauliobo/pg_sift.git", branch: "feat/homebrew"
 
-  depends_on "lz4"
   depends_on "postgresql@17" => [:build, :test]
   depends_on "postgresql@18" => [:build, :test]
+  depends_on "lz4"
   depends_on "zstd"
 
   def postgresqls
@@ -50,7 +50,9 @@ class PgSift < Formula
       system pg_ctl, "start", "-D", datadir, "-l", testpath/"log-#{postgresql.name}"
       begin
         args = ["-X", "-v", "ON_ERROR_STOP=1", "-h", testpath, "-p", port.to_s, "-d", "postgres"]
-        system psql, *args, "-v", "from=3.0", "-v", "to=3.1", "-f", pkgshare/"smoke.sql"
+        control = (share/postgresql.name/"extension/pg_sift.control").read
+        extension_version = control.match(/default_version = '([^']+)'/)[1]
+        system psql, *args, "-v", "from=3.0", "-v", "to=#{extension_version}", "-f", pkgshare/"smoke.sql"
         (testpath/"column.sql").write <<~SQL
           CREATE TABLE metrics (category int, amount int);
           INSERT INTO metrics SELECT i % 3, i FROM generate_series(1, 1000) i;
