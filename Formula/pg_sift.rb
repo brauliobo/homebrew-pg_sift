@@ -55,6 +55,7 @@ class PgSift < Formula
         system psql, *args, "-v", "from=3.0", "-v", "to=#{extension_version}", "-f", pkgshare/"smoke.sql"
         column_sql = testpath/"column-#{postgresql.name}.sql"
         column_sql.write <<~SQL
+          LOAD 'pg_sift';
           CREATE TABLE metrics (category int, amount int);
           INSERT INTO metrics SELECT i % 3, i FROM generate_series(1, 1000) i;
           CREATE INDEX metrics_col ON metrics USING sift_col (category, amount);
