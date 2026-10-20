@@ -53,17 +53,20 @@ class PgSift < Formula
         control = (share/postgresql.name/"extension/pg_sift.control").read
         extension_version = control.match(/default_version = '([^']+)'/)[1]
         system psql, *args, "-v", "from=3.0", "-v", "to=#{extension_version}", "-f", pkgshare/"smoke.sql"
-        (testpath/"column.sql").write <<~SQL
+        column_sql = testpath/"column-#{postgresql.name}.sql"
+        column_sql.write <<~SQL
           CREATE TABLE metrics (category int, amount int);
           INSERT INTO metrics SELECT i % 3, i FROM generate_series(1, 1000) i;
           CREATE INDEX metrics_col ON metrics USING sift_col (category, amount);
           VACUUM (ANALYZE) metrics;
           SET sift.enable_agg = on;
+          EXPLAIN (COSTS OFF) SELECT sum(amount) FROM metrics WHERE category = 1;
+          SELECT sum(amount) FROM metrics WHERE category = 1;
           DO $$ BEGIN
             ASSERT (SELECT sum(amount) FROM metrics WHERE category = 1) = 167167;
           END $$;
         SQL
-        system psql, *args, "-f", testpath/"column.sql"
+        system psql, *args, "-f", column_sql
       ensure
         system pg_ctl, "stop", "-D", datadir
       end
