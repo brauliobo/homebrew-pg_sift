@@ -2,7 +2,7 @@ class PgSift < Formula
   desc "Full-text BM25 search and column analytics for PostgreSQL"
   homepage "https://github.com/brauliobo/pg_sift"
   license "PostgreSQL"
-  head "https://github.com/brauliobo/pg_sift.git", branch: "feat/homebrew"
+  head "https://github.com/brauliobo/pg_sift.git", branch: "main"
 
   depends_on "postgresql@17" => [:build, :test]
   depends_on "postgresql@18" => [:build, :test]
@@ -29,8 +29,8 @@ class PgSift < Formula
     <<~EOS
       In each PostgreSQL database, enable pg_sift with:
         CREATE EXTENSION pg_sift;
-      This HEAD formula temporarily builds the macOS portability PR branch.
-      A stable formula will follow a release containing those changes.
+      This HEAD formula builds the main branch.
+      A stable formula will follow a release supporting macOS arm64.
     EOS
   end
 
