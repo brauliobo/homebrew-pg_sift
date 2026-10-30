@@ -31,8 +31,8 @@ class PgSift < Formula
     <<~EOS
       In each PostgreSQL database, enable pg_sift with:
         CREATE EXTENSION pg_sift;
-      This HEAD formula builds the main branch.
-      A stable formula will follow a release supporting macOS arm64.
+      `brew install brauliobo/pg_sift/pg_sift` builds the latest release.
+      `brew install --HEAD brauliobo/pg_sift/pg_sift` builds the main branch.
     EOS
   end
 
