@@ -1,10 +1,10 @@
 # pg_sift Homebrew tap
 
-This compatibility tap builds the source repository's `main` branch for Homebrew PostgreSQL 17 and 18. Existing install commands continue to work:
+This compatibility tap carries the formula of the source repository's latest release (`--HEAD` builds `main`) for Homebrew PostgreSQL 17 and 18. Existing install commands continue to work:
 
 ```sh
 brew tap brauliobo/pg_sift
-brew install --HEAD brauliobo/pg_sift/pg_sift
+brew install brauliobo/pg_sift/pg_sift          # --HEAD for main
 brew test brauliobo/pg_sift/pg_sift
 ```
 

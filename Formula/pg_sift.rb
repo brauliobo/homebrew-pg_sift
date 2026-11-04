@@ -1,13 +1,16 @@
 class PgSift < Formula
-  desc "Full-text BM25 search and column analytics for PostgreSQL"
+  desc "Fast analytics for PostgreSQL: just add an index, plus BM25 full-text search"
   homepage "https://github.com/brauliobo/pg_sift"
-  url "https://github.com/brauliobo/pg_sift/archive/refs/tags/v3.7.1.tar.gz"
-  sha256 "7098ed050b8b9b1edea48eb43a3031bf5dc83ff4f48b4844bcf2bba66df2a69a"
+  url "https://github.com/brauliobo/pg_sift/archive/refs/tags/v4.0.3.tar.gz"
+  sha256 "322910b5f8fd565f75d5febb2a1b8b095b2c445eaf47e77ec5fee423f451fe8a"
   license "PostgreSQL"
   head "https://github.com/brauliobo/pg_sift.git", branch: "main"
 
   depends_on "postgresql@17" => [:build, :test]
   depends_on "postgresql@18" => [:build, :test]
+  # utils/pg_locale.h, which src/core/compat.h includes, includes unicode/ucol.h; icu4c is keg-only, and Homebrew puts
+  # the include directory of a declared dependency on the compiler's path
+  depends_on "icu4c"
   depends_on "lz4"
   depends_on "zstd"
 
@@ -31,8 +34,7 @@ class PgSift < Formula
     <<~EOS
       In each PostgreSQL database, enable pg_sift with:
         CREATE EXTENSION pg_sift;
-      `brew install brauliobo/pg_sift/pg_sift` builds the latest release.
-      `brew install --HEAD brauliobo/pg_sift/pg_sift` builds the main branch.
+      The stable formula builds the release tag; `brew install --HEAD` builds the main branch.
     EOS
   end
 
@@ -66,7 +68,7 @@ class PgSift < Formula
           CREATE INDEX metrics_col ON metrics USING sift_col (category, amount);
           VACUUM (ANALYZE) metrics;
           SET sift.enable_agg = on;
-          SET cpu_tuple_cost = 0.5;
+          SET enable_seqscan = off;
           EXPLAIN (COSTS OFF) SELECT sum(amount) FROM metrics WHERE category = 1;
           SELECT sum(amount) FROM metrics WHERE category = 1;
           DO $$
